@@ -1,13 +1,76 @@
-CREATE DATABASE [MINIONS]
 USE [MINIONS]
-Go
+GO
 
 CREATE TABLE [MINIONS](
-[id] INT NOT NULL,
-[name] NVARCHAR(50) NOT NULL,
+[id] int PRIMARY KEY NOT NULL,
+[name] VARCHAR(30),
 [age] INT
 )
 
+GO
+
+CREATE TABLE [TOWNS](
+[id] INT PRIMARY KEY NOT NULL,
+[name] VARCHAR(30) NOT NULL
+)
+
+
 ALTER TABLE [MINIONS]
-ADD CONSTRAINT PK_MINIONSID PRIMARY KEY(Id)
+ADD [townid] INT
+
+ALTER TABLE [MINIONS]
+ADD CONSTRAINT [FK_NameTownId] FOREIGN KEY (Townid) REFERENCES [TOWNS]([id]) 
+
+INSERT INTO [MINIONS] ([id], [name], [age], [townid]) VALUES
+(1, 'Kevin', 22, 1),
+(2,	'Bob', 15, 3),
+(3,	'Steward', NULL, 2)
+
+
+INSERT INTO [TOWNS] ([id], [name]) VALUES
+(1,	'Sofia'),
+(2,	'Plovdiv'),
+(3, 'Varna')
+
+
+TRUNCATE TABLE [MINIONS]
+
+DROP TABLE [MINIONS]
+DROP TABLE [TOWNS]
+
+CREATE TABLE [People](
+[Id] INT PRIMARY KEY NOT NULL,
+[Name] NVARCHAR(200) NOT NULL,
+[Picture] VARBINARY(MAX),
+CHECK (DATALENGTH ([Picture]) <= 2000000),
+[Height] FLOAT(2),
+[Weight] FLOAT(2),
+[Gender] BIT NOT NULL,
+[Birthdate] DATETIME2 NOT NULL,
+[Biography] NVARCHAR(MAX)
+)
+
+INSERT INTO [People] ([Id], [Name], [Picture], [Height], [Weight], [Gender], [Birthdate], [Biography]) VALUES
+(1, 'Ivan', NULL, 1.93, 100, 0, '2002-12-23' , NULL)
+
+
+CREATE TABLE [Users](
+	[Id] BIGINT PRIMARY KEY IDENTITY,
+	[Username] VARCHAR(30) UNIQUE NOT NULL,
+	[Password] VARCHAR(26) NOT NULL,
+	[ProfilePicture] VARBINARY(MAX),
+	CHECK (DATALENGTH ([ProfilePicture]) <= 900000),
+	[LastLoginTime] DATETIME2,
+	[IsDeleted] BINARY NOT NULL
+)
+
+ALTER TABLE [Users]
+DROP CONSTRAINT [PK__Users__3214EC0734077B69]
+
+ALTER TABLE [USERS]
+ADD CONSTRAINT [PK_USEDCOMPOSITEIDUSERNAME] PRIMARY KEY(Id, Username)
+
+ALTER TABLE [Users]
+ADD CONSTRAINT [C_PasswordLenght] CHECK (DATALENGTH ([Password]) > 5) 
+
 
