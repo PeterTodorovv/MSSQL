@@ -39,3 +39,28 @@ GO
 SELECT FirstName, LastName, Salary FROM Employees
 WHERE Salary > 50000
 ORDER BY Salary DESC
+GO
+
+USE SoftUni
+SELECT TOP(5) FirstName, LastName
+FROM Employees
+ORDER BY Salary DESC
+GO
+
+SELECT FirstName, LastName
+FROM Employees
+WHERE DepartmentID != 4
+GO
+
+SELECT *
+FROM Employees
+ORDER BY Salary DESC
+,FirstName
+,LastName DESC
+,MiddleName
+GO
+
+CREATE VIEW V_EmployeeNameJobTitle 
+AS 
+SELECT FirstName + LastName AS Example
+FROM Employees
