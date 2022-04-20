@@ -62,5 +62,57 @@ GO
 
 CREATE VIEW V_EmployeeNameJobTitle 
 AS 
-SELECT FirstName + LastName AS Example
-FROM Employees
+SELECT CONCAT([FirstName], ' ', [MiddleName], ' ', [LastName])
+		   AS [Full Name]
+             ,[JobTitle] AS [Job Title]
+         FROM [Employees]
+GO
+
+CREATE VIEW V_EmployeesSalaries AS
+SELECT FirstName, LastName, Salary FROM Employees
+GO
+
+SELECT DISTINCT JobTitle FROM Employees
+GO
+
+SELECT TOP(10) * FROM Projects
+      ORDER BY [StartDate]
+              ,[Name]
+			  GO
+
+SELECT TOP(7) [FirstName], [LastName], [HireDate] FROM [Employees]
+     ORDER BY [HireDate]  DESC
+	 GO
+
+UPDATE Employees
+SET [Salary] += [Salary] * 0.12
+WHERE [DepartmentID] IN (1, 2, 4, 11)
+
+SELECT [Salary] FROM [Employees]
+GO
+
+USE Geography
+GO
+
+  SELECT [PeakName] FROM Peaks
+ORDER BY [PeakName] 
+GO
+
+SELECT TOP(30) [CountryName], [Population] FROM Countries
+         WHERE [ContinentCode] = 'EU'
+      ORDER BY [Population] DESC
+              ,[CountryName]
+			  GO
+
+SELECT [CountryName], [CountryCode], 
+CASE
+WHEN [CurrencyCode]  = 'EUR' THEN 'Euro'
+ELSE 'Not Euro'
+END AS [Currency]
+FROM Countries
+ORDER BY CountryName
+GO
+
+USE Diablo
+SELECT [Name] FROM Characters
+ORDER BY [Name]
