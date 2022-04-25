@@ -3,20 +3,20 @@ GO
 
 USE TableRelations
 
- CREATE TABLE Persons (
- PersonID INT PRIMARY KEY IDENTITY
-,FirstName VARCHAR(15) NOT NULL
-,Salary MONEY  NOT NULL
-,PassportID INT NOT NULL
-)
-
  CREATE TABLE Passports(
  PassportID INT PRIMARY KEY
-,PassportNumber VARCHAR(30) NOT NULL
+,PassportNumber CHAR(8) NOT NULL
 )
 GO
 
-ALTER TABLE Persons
-ADD CONSTRAINT FK_PassportsID 
-FOREIGN KEY (PassportID)
-REFERENCES Passports(PassportID)
+ CREATE TABLE Persons (
+ PersonID INT PRIMARY KEY IDENTITY
+,FirstName VARCHAR(15) NOT NULL
+,Salary DECIMAL(9, 2) NOT NULL
+,PassportID INT FOREIGN
+ KEY REFERENCES Passports (PassportID)
+UNIQUE NOT NULL 
+)
+
+
+
