@@ -7,7 +7,6 @@ USE TableRelations
  PassportID INT PRIMARY KEY
 ,PassportNumber CHAR(8) NOT NULL
 )
-GO
 
  CREATE TABLE Persons (
  PersonID INT PRIMARY KEY IDENTITY
@@ -89,5 +88,95 @@ VALUES
 ,(2, 102)
 ,(2, 103)
 
+GO
+
+
+
+CREATE TABLE Teachers(
+TeacherID INT PRIMARY KEY IDENTITY(101, 1)
+,[Name] VARCHAR(15) NOT NULL
+,ManagerID INT FOREIGN KEY REFERENCES Teachers(TeacherID) 
+)
+
+INSERT INTO Teachers ([Name], ManagerID)
+VALUES 
+('John', NULL)
+,('Maya', 106)
+,('Silvia', 106)
+,('Ted', 105)
+,('Mark', 101)
+,('Greta', 101)
+
+GO
+
+
+CREATE TABLE ItemTypes(
+ ItemTypeID Int PRIMARY KEY IDENTITY
+,[Name] VARCHAR(50) NOT NULL
+)
+
+CREATE TABLE Items(
+ItemID INT PRIMARY KEY IDENTITY
+,[Name] VARCHAR(50)
+,ItemTypeID INT FOREIGN KEY REFERENCES ItemTypes (ItemTypeID)
+)
+
+CREATE TABLE Cities (
+CityID INT PRIMARY KEY
+,[Name] VARCHAR(50)
+)
+
+CREATE TABLE Customers (
+CustomerId INT PRIMARY KEY IDENTITY
+,[Name] VARCHAR(50)
+,BirthDate DATE
+,CityID INT FOREIGN KEY REFERENCES Cities(CityID)
+)
+
+CREATE TABLE Orders(
+OrderID INT PRIMARY KEY IDENTITY
+,CustomerID INT FOREIGN KEY REFERENCES Customers(CustomerId)
+)
+
+CREATE TABLE OrderItems(
+OrderID INT FOREIGN KEY REFERENCES Orders(OrderID)
+,ItemID INT FOREIGN KEY REFERENCES Items(ItemID)
+PRIMARY KEY (OrderID, ItemID)
+)
+GO
+
+
+USE TableRelations
+
+CREATE TABLE Subjects(
+SubjectID INT PRIMARY KEY IDENTITY
+,SubjectName VARCHAR(30) NOT NULL
+)
+
+
+CREATE TABLE Majors(
+MajorID INT PRIMARY KEY IDENTITY
+,[Name] VARCHAR(30) NOT NULL
+)
+
+CREATE TABLE Students(
+StudentID INT PRIMARY KEY IDENTITY
+,StudentNumber INT NOT NULL
+,StudentName VARCHAR(30) NOT NULL
+,MajorID INT NOT NULL FOREIGN KEY REFERENCES Majors(MajorID)
+)
+
+CREATE TABLE Agenda(
+StudentID INT FOREIGN KEY REFERENCES Students(StudentID)
+,SubjectID INT FOREIGN KEY REFERENCES Subjects(SubjectID)
+PRIMARY KEY (StudentID, SubjectID)
+)
+
+CREATE TABLE Payments(
+PaymentID INT PRIMARY KEY IDENTITY
+,PaymentDate DATE NOT NULL
+,PaymentAmount FLOAT NOT NULL
+,StudentID INT NOT NULL FOREIGN KEY REFERENCES Students(StudentID)
+)
 GO
 
