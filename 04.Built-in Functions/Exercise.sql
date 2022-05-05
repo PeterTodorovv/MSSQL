@@ -49,4 +49,13 @@ FROM Employees
 WHERE Salary BETWEEN 10000 AND 50000 
 )
 AS RankingTable
+WHERE RankingTable.[Rank] = 2
 ORDER BY Salary DESC
+GO
+
+
+
+USE Geography
+SELECT CountryName, IsoCode FROM Countries
+WHERE CountryName LIke '%a%a%a%'
+ORDER BY IsoCode
