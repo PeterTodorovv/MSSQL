@@ -80,4 +80,65 @@ ON e.DepartmentID = d.DepartmentID
 ORDER BY e.EmployeeID
 GO
 
-SELECT MIN(Salary) AS MinAverageSalary FROM Employees
+SELECT MIN(s.AverageSalary) AS MinAverageSalary FROM 
+(SELECT AVG(Salary) AS AverageSalary From Employees GROUP BY DepartmentID) AS s
+GO
+
+USE Geography
+SELECT c.CountryCode, m.MountainRange, p.PeakName, p.Elevation
+FROM Countries AS c
+LEFT JOIN MountainsCountries AS mc
+ON c.CountryCode = mc.CountryCode
+LEFT JOIN Mountains AS m
+ON m.Id = mc.MountainId
+LEFT JOIN Peaks AS p
+ON p.MountainId = m.Id
+WHERE p.Elevation > 2835 AND c.CountryCode = 'BG'
+ORDER BY Elevation DESC
+GO
+
+SELECT c.CountryCode , COUNT(mc.MountainId) AS MountainRanges
+FROM Countries AS c
+LEFT JOIN MountainsCountries AS mc
+ON c.CountryCode = mc.CountryCode
+WHERE c.CountryCode IN ('US', 'BG', 'RU')
+GROUP BY c.CountryCode
+GO
+
+SELECT TOP(5) c.CountryName, r.RiverName 
+FROM Countries AS c
+LEFT JOIN CountriesRivers AS cr
+ON c.CountryCode = cr.CountryCode
+LEFT JOIN Rivers AS r
+ON cr.RiverId = r.Id
+WHERE c.ContinentCode = 'AF'
+ORDER BY c.CountryName
+GO
+
+SELECT * FROM
+(
+SELECT c.ContinentCode, c.CurrencyCode, COUNT(c.CurrencyCode) AS CurrencyUsage
+FROM Countries AS c
+GROUP BY c.ContinentCode, c.CurrencyCode
+) AS Subquery
+WHERE CurrencyUsage > 1
+ORDER BY ContinentCode
+GO
+
+SELECT TOP(5)
+c.CountryName
+,MAX(p.Elevation) AS HighestPeakElevation
+,MAX(r.[Length]) AS LongestRiverLength
+FROM Countries AS c
+LEFT JOIN MountainsCountries AS mc
+ON c.CountryCode = mc.CountryCode
+LEFT JOIN Mountains AS m
+ON mc.MountainId = m.Id
+LEFT JOIN Peaks AS p
+ON m.Id = p.MountainId
+LEFT JOIN CountriesRivers AS cr
+ON c.CountryCode = cr.CountryCode
+LEFT JOIN Rivers AS r
+ON cr.RiverId = r.Id
+GROUP BY c.CountryName
+ORDER BY p.Elevation DESC, r.[Length] DESC, c.CountryName
