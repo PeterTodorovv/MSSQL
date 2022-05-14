@@ -59,3 +59,62 @@ FROM WizzardDeposits
 ) AS AgeGroups
 GROUP BY AgeGroup
 GO
+
+SELECT FirstLetter 
+FROM(
+SELECT LEFT(FirstName, 1) AS FirstLetter
+FROM WizzardDeposits
+WHERE DepositGroup = 'Troll Chest'
+) AS FirstLetters
+GROUP BY FirstLetter
+ORDER BY FirstLetter
+GO
+
+SELECT DepositGroup, IsDepositExpired, AVG(DepositInterest) AS AverageInterest 
+FROM WizzardDeposits
+WHERE DepositStartDate > '1985-01-01'
+GROUP BY DepositGroup, IsDepositExpired
+ORDER BY DepositGroup DESC, IsDepositExpired
+GO
+
+USE SOFTUNI
+
+SELECT DepartmentID, SUM(Salary) 
+FROM Employees
+GROUP BY DepartmentID
+ORDER BY DepartmentID
+GO
+
+SELECT DepartmentID, MIN(Salary) AS MinimumSalary
+FROM Employees
+WHERE DepartmentID IN (2, 5, 7) AND HireDate > '2000-01-01'
+GROUP BY DepartmentID
+GO
+
+SELECT * 
+INTO HighPaidEmployee
+FROM Employees
+WHERE Salary > 30000
+
+DELETE FROM HighPaidEmployee
+WHERE ManagerID = 42
+
+UPDATE HighPaidEmployee
+SET Salary += 5000
+WHERE DepartmentID = 1
+
+SELECT DepartmentID, AVG(Salary) AS AverageSalary
+FROM HighPaidEmployee
+GROUP BY DepartmentID
+GO
+
+SELECT DepartmentID, MAX(Salary) AS MaxSalary
+FROM Employees
+GROUP BY DepartmentID
+HAVING MAX(Salary) NOT BETWEEN 30000 AND 70000
+GO
+
+SELECT COUNT(Salary) AS [Count] 
+FROM Employees
+WHERE ManagerID IS NULL
+GO
