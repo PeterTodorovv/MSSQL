@@ -70,3 +70,33 @@ END
 GO
 SELECT Salary, dbo.ufn_GetSalaryLevel(Salary) FROM Employees
 GO
+
+CREATE PROC usp_EmployeesBySalaryLevel @SalaryLevel VARCHAR(7)
+AS
+BEGIN
+	SELECT FirstName, LastName FROM Employees
+	WHERE dbo.ufn_GetSalaryLevel(Salary) = @SalaryLevel
+END
+GO
+EXEC usp_EmployeesBySalaryLevel 'High'
+GO
+
+CREATE FUNCTION ufn_IsWordComprised(@setOfLetters VARCHAR(10), @word VARCHAR(20))
+RETURNS BIT
+AS
+BEGIN
+DECLARE @CurrentIndex INT = 1
+WHILE(@currentIndex <= LEN(@word))
+	BEGIN
+	DECLARE @currentLetter varchar(1) = SUBSTRING(@word, @currentIndex, 1)
+	SET @CurrentIndex += 1
+	IF CHARINDEX(@currentLetter, @setOfLetters) = 0
+	RETURN 0
+	END
+RETURN 1
+END
+GO
+
+
+USE Gringotts
+
