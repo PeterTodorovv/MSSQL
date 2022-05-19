@@ -98,5 +98,52 @@ END
 GO
 
 
-USE Gringotts
+USE Bank
+
+CREATE PROC usp_GetHoldersFullName
+AS
+BEGIN
+SELECT CONCAT(FirstName, ' ', LastName) AS [Full Name] FROM AccountHolders
+END
+GO
+EXEC usp_GetHoldersFullName
+GO
+
+CREATE PROC usp_GetHoldersWithBalanceHigherThan (@MinMoney MONEY)
+AS
+BEGIN
+SELECT FirstName AS [First Name], LastName AS [Last Name] FROM AccountHolders AS ah
+LEFT JOIN Accounts AS a
+ON ah.Id = a.AccountHolderId
+GROUP BY AccountHolderId, FirstName, LastName
+HAVING SUM(Balance) > @MinMoney
+ORDER BY FirstName, LastName
+END
+GO
+EXEC usp_GetHoldersWithBalanceHigherThan 50000
+GO
+
+
+CREATE OR ALTER FUNCTION ufn_CalculateFutureValue (@sum DECIMAL(15, 4), @yearlyInterestRate FLOAT, @years INT)
+RETURNS DECIMAL(15, 4)
+AS
+BEGIN
+	RETURN @sum * (POWER((1 + @yearlyInterestRate), @years))
+END
+GO
+SELECT dbo.ufn_CalculateFutureValue(1000, 0.10, 5)
+GO
+
+CREATE PROC usp_CalculateFutureValueForAccount (@AccountId INT, @InterestRate FLOAT) 
+AS
+BEGIN
+SELECT AccountHolderId, FirstName AS [First Name], LastName AS [Last Name], Balance AS [Current Balance], dbo.ufn_CalculateFutureValue(Balance, @InterestRate, 5) AS [Balance in 5 years]
+FROM AccountHolders AS ah
+LEFT JOIN Accounts AS a
+ON ah.Id = a.AccountHolderId
+WHERE a.Id = @AccountId
+END
+GO
+EXEC usp_CalculateFutureValueForAccount 1, 0.1
+GO
 
