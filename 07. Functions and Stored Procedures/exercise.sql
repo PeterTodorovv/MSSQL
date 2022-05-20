@@ -147,3 +147,88 @@ GO
 EXEC usp_CalculateFutureValueForAccount 1, 0.1
 GO
 
+USE Diablo
+
+CREATE FUNCTION ufn_CashInUsersGames (@GameName nvarchar(50))
+RETURNS TABLE
+AS
+RETURN
+SELECT SUM(Cash) AS SumCash FROM(
+SELECT RowNumber % 2 AS EvenOrOdd, Cash FROM(
+SELECT ROW_NUMBER() OVER(ORDER BY cash DESC) AS RowNumber, Cash FROM UsersGames AS ug
+JOIN Games AS g
+ON ug.GameId = g.Id AND [Name] = @GameName 
+) AS NumberedCash
+) AS EvenAndOddCash
+GROUP BY EvenOrOdd
+HAVING EvenOrOdd = 1
+GO
+
+SELECT * FROM dbo.ufn_CashInUsersGames('Love in a mist')
+
+USE Bank
+
+CREATE TABLE Logs(
+LogId INT PRIMARY KEY IDENTITY
+,AccountId INT NOT NULL
+,OldSum INT NOT NULL
+,NewSum INT NOT NULL
+)
+GO
+
+CREATE TRIGGER tr_AddToLogsOnAccountUpdate
+ON Accounts FOR UPDATE
+AS
+INSERT INTO Logs(AccountId, OldSum, NewSum)
+SELECT a.[Id], d.Balance, a.Balance FROM Accounts AS a
+JOIN deleted AS d
+ON a.Id = d.Id
+GO
+
+CREATE TABLE NotificationEmails(
+id INT PRIMARY KEY IDENTITY
+,Recipient INT NOT NULL
+,[Subject] VARCHAR(30) NOT NULL
+,Body VARCHAR(100) NOT NULL
+)
+GO
+
+CREATE TRIGGER tr_CreateEmail
+ON Logs FOR INSERT
+AS
+INSERT INTO NotificationEmails(Recipient, [Subject], Body)
+SELECT l.AccountId
+,CONCAT('Balance change for account: ', l.AccountId)
+,CONCAT('On ',FORMAT (getdate(), 'MMM dd yyyy hh:mm tt') ,' your balance was changed from ', l.OldSum,' to ', l.NewSum,'.')
+FROM Logs AS l
+
+UPDATE Accounts
+SET Balance -= 100
+WHERE Id < 5
+GO
+
+CREATE PROC usp_DepositMoney (@AccountId INT, @MoneyAmount DECIMAL(15, 4))
+AS
+BEGIN
+UPDATE Accounts
+SET Balance += @MoneyAmount
+WHERE Id = @AccountId
+END
+GO
+
+CREATE PROC usp_WithdrawMoney  (@AccountId INT, @MoneyAmount DECIMAL(15, 4))
+AS
+BEGIN
+UPDATE Accounts
+SET Balance -= @MoneyAmount
+WHERE Id = @AccountId
+END
+GO
+
+
+CREATE PROC usp_TransferMoney(@SenderId INT, @ReceiverId INT, @Amount DECIMAL(15, 4)) 
+AS
+BEGIN TRANSACTION
+EXEC usp_WithdrawMoney @SenderId, @Amount
+EXEC usp_DepositMoney @ReceiverId, @Amount
+COMMIT
