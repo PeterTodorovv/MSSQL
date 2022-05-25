@@ -139,11 +139,78 @@ GROUP BY Mechanic, MechanicId
 ORDER BY MechanicId
 GO
 
-SELECT * FROM(
-SELECT CONCAT(m.FirstName, ' ', m.LastName) AS Available, [Status]
+
+SELECT Available FROM(
+SELECT Available, [Status], MechanicId FROM(
+SELECT CONCAT(m.FirstName, ' ', m.LastName) AS Available, m.MechanicId, j.Status
 FROM Mechanics AS m
-JOIN Jobs AS j
+LEFT JOIN Jobs AS j
 ON m.MechanicId = j.MechanicId
 ) Mechanics
-GROUP BY Available
-HAVING COUNT([Status] = 'Pending') = 0 AND COUNT([Status] = 'Pending') = 0
+GROUP BY Available, MechanicId, [Status]
+) AS AllAvailable
+WHERE 'Pending' != ANY(SELECT [Status]) AND 'In Progress' != ALL(SELECT [Status])
+GO
+
+
+SELECT j.JobId,
+CASE
+	WHEN
+		SUM(op.Quantity * p.Price) IS NULL THEN 0.00
+	ELSE
+		SUM(op.Quantity * p.Price)
+	END AS Total
+FROM Jobs AS j
+LEFT JOIN Orders AS o
+ON o.JobId = j.JobId
+LEFT JOIN OrderParts AS op
+ON o.OrderId = op.OrderId
+LEFT JOIN Parts AS p
+ON op.PartId = p.PartId
+WHERE j.[Status] = 'Finished'
+GROUP BY j.JobId
+ORDER BY Total DESC, JobId
+GO
+
+SELECT *  FROM (
+SELECT p.PartId, p.[Description], pn.Quantity AS [Required], p.StockQty AS [In Stock], ISNULL(op.Quantity, 0) AS Ordered
+FROM Jobs AS j
+JOIN PartsNeeded AS pn
+ON j.JobId = pn.JobId
+LEFT JOIN Parts AS p
+ON pn.PartId = p.PartId
+LEFT JOIN Orders AS o
+ON o.JobId = j.JobId
+LEFT JOIN OrderParts AS op
+ON p.PartId = op.PartId
+WHERE j.[Status] <> 'Finished' AND (o.Delivered = 0 OR o.Delivered IS NULL) 
+) AS PartsQuantity
+WHERE [Required] > [In Stock] + Ordered
+ORDER BY PartID
+GO
+
+CREATE PROC usp_PlaceOrder (@JobId INT, @SerialNumber VARCHAR(50), @Quantity INT)
+AS
+BEGIN
+	DECLARE @JobCount INT = (SELECT COUNT(OrderId) FROM Jobs AS j
+							LEFT JOIN Orders AS o
+							ON j.JobId = o.JobId
+							WHERE j.JobId = @JobId)
+END
+GO
+
+CREATE FUNCTION udf_GetCost(@JobID INT)
+RETURNS DECIMAL(8, 2)
+BEGIN
+	RETURN ISNULL((SELECT SUM(op.Quantity * Price) FROM Jobs AS j
+								LEFT JOIN Orders AS o
+								ON o.JobId = j.JobId
+								LEFT JOIN OrderParts AS op
+								ON op.OrderId = o.OrderId
+								LEFT JOIN Parts AS p
+								ON p.PartId = op.PartId
+								WHERE j.JobId = @JobID
+								GROUP BY j.JobId), 0)
+END
+
+GO
